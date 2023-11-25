@@ -98,19 +98,19 @@ const updateMessageSender = (name: string): void => {
   saveCurrentSender();
 };
 
-johnSelectorBtn.onclick = (): void => {
+johnSelectorBtn.addEventListener("click", (): void => {
   updateMessageSender("Иван");
   unreadMessagesCount["Иван"] = 0;
   saveUnreadMessagesCount();
   updateUnreadMessagesDisplay();
-};
+});
 
-janeSelectorBtn.onclick = (): void => {
+janeSelectorBtn.addEventListener("click", (): void => {
   updateMessageSender("Мария");
   unreadMessagesCount["Мария"] = 0;
   saveUnreadMessagesCount();
   updateUnreadMessagesDisplay();
-};
+});
 
 const sendMessage = (event: Event): void => {
   event.preventDefault();
@@ -157,9 +157,14 @@ clearChatBtn.addEventListener("click", (): void => {
 
 window.onload = (): void => {
   updateMessageSender(messageSender);
-  messages.forEach((message) => {
-    chatMessages.innerHTML += createChatMessageElement(message);
-  });
+
+  // Отрисовка сообщений только если они еще не отображены
+  if (chatMessages.innerHTML.trim() === "") {
+    messages.forEach((message) => {
+      chatMessages.innerHTML += createChatMessageElement(message);
+    });
+  }
+
   updateUnreadMessagesDisplay();
 };
 
