@@ -14,11 +14,11 @@ interface UnreadMessagesCount {
 }
 
 // Получение элементов DOM
-const johnSelectorBtn = document.querySelector(
-  "#john-selector",
+const ivanSelectorBtn = document.querySelector(
+  "#ivan-selector",
 ) as HTMLButtonElement;
-const janeSelectorBtn = document.querySelector(
-  "#jane-selector",
+const maryaSelectorBtn = document.querySelector(
+  "#marya-selector",
 ) as HTMLButtonElement;
 const chatHeader = document.querySelector(".chat-header") as HTMLElement;
 const chatMessages = document.querySelector(".chat-messages") as HTMLElement;
@@ -29,8 +29,8 @@ const chatInput = document.querySelector(".chat-input") as HTMLInputElement;
 const clearChatBtn = document.querySelector(
   ".clear-chat-button",
 ) as HTMLButtonElement;
-const johnUnreadCount = document.querySelector("#john-unread") as HTMLElement;
-const janeUnreadCount = document.querySelector("#jane-unread") as HTMLElement;
+const ivanUnreadCount = document.querySelector("#ivan-unread") as HTMLElement;
+const maryaUnreadCount = document.querySelector("#marya-unread") as HTMLElement;
 
 // Начальные данные
 let messages: Message[] = JSON.parse(localStorage.getItem("messages") || "[]");
@@ -52,13 +52,13 @@ const createChatMessageElement = (message: Message): string => {
 };
 
 const updateUnreadMessagesDisplay = (): void => {
-  johnUnreadCount.style.display =
+  ivanUnreadCount.style.display =
     unreadMessagesCount["Иван"] > 0 ? "inline" : "none";
-  janeUnreadCount.style.display =
+  maryaUnreadCount.style.display =
     unreadMessagesCount["Мария"] > 0 ? "inline" : "none";
 
-  johnUnreadCount.innerText = unreadMessagesCount["Иван"].toString();
-  janeUnreadCount.innerText = unreadMessagesCount["Мария"].toString();
+  ivanUnreadCount.innerText = unreadMessagesCount["Иван"].toString();
+  maryaUnreadCount.innerText = unreadMessagesCount["Мария"].toString();
 };
 
 const saveUnreadMessagesCount = (): void => {
@@ -86,11 +86,11 @@ const updateMessageSender = (name: string): void => {
   chatInput.placeholder = `Здесь пишет ${messageSender}...`;
 
   if (name === "Иван") {
-    johnSelectorBtn.classList.add("active-person");
-    janeSelectorBtn.classList.remove("active-person");
+    ivanSelectorBtn.classList.add("active-person");
+    maryaSelectorBtn.classList.remove("active-person");
   } else if (name === "Мария") {
-    janeSelectorBtn.classList.add("active-person");
-    johnSelectorBtn.classList.remove("active-person");
+    maryaSelectorBtn.classList.add("active-person");
+    ivanSelectorBtn.classList.remove("active-person");
   }
 
   redrawMessages();
@@ -98,14 +98,14 @@ const updateMessageSender = (name: string): void => {
   saveCurrentSender();
 };
 
-johnSelectorBtn.addEventListener("click", (): void => {
+ivanSelectorBtn.addEventListener("click", (): void => {
   updateMessageSender("Иван");
   unreadMessagesCount["Иван"] = 0;
   saveUnreadMessagesCount();
   updateUnreadMessagesDisplay();
 });
 
-janeSelectorBtn.addEventListener("click", (): void => {
+maryaSelectorBtn.addEventListener("click", (): void => {
   updateMessageSender("Мария");
   unreadMessagesCount["Мария"] = 0;
   saveUnreadMessagesCount();
