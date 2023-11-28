@@ -31,6 +31,7 @@ export type IncrementUnreadCountAction = {
 
 export type ResetUnreadCountAction = {
   type: typeof RESET_UNREAD_COUNT;
+  payload: string;
 };
 
 export type SetCurrentSenderAction = {
@@ -63,8 +64,9 @@ export const incrementUnreadCount = (
   payload: userName,
 });
 
-export const resetUnreadCount = (): ResetUnreadCountAction => ({
+export const resetUnreadCount = (userName: string): ResetUnreadCountAction => ({
   type: RESET_UNREAD_COUNT,
+  payload: userName,
 });
 
 export const setCurrentSender = (sender: string): SetCurrentSenderAction => ({
@@ -85,9 +87,10 @@ export const sendMessageAsync = (message: Message) => (dispatch: Dispatch) => {
 };
 
 // Обнуление счётчика непрочитанных сообщений может быть также асинхронной операцией
-export const resetUnreadCountAsync = () => (dispatch: Dispatch) => {
-  // Имитация асинхронной операции
-  setTimeout(() => {
-    dispatch(resetUnreadCount());
-  }, 1000);
-};
+export const resetUnreadCountAsync =
+  (userName: string) => (dispatch: Dispatch) => {
+    // Имитация асинхронной операции
+    setTimeout(() => {
+      dispatch(resetUnreadCount(userName));
+    }, 1000);
+  };

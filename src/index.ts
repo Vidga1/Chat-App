@@ -7,6 +7,7 @@ import {
   clearChat,
   setCurrentSender,
   incrementUnreadCount,
+  resetUnreadCount,
 } from "./redux/actions";
 
 // Получение элементов DOM
@@ -31,15 +32,31 @@ const maryaUnreadCount = document.getElementById(
   "marya-unread",
 ) as HTMLSpanElement;
 
-// Обработчики событий
+// Проверка существования элементов DOM
+if (
+  !ivanSelectorButton ||
+  !maryaSelectorButton ||
+  !chatInputForm ||
+  !chatInput ||
+  !chatMessages ||
+  !clearChatButton
+) {
+  throw new Error("Some HTML elements are missing.");
+}
+
+// Обработчики событий для выбора пользователя
 ivanSelectorButton.addEventListener("click", () => {
   store.dispatch(setCurrentSender("Иван"));
-  ivanUnreadCount.style.display = "none";
+  ivanSelectorButton.classList.add("active-person");
+  maryaSelectorButton.classList.remove("active-person");
+  store.dispatch(resetUnreadCount("Иван")); // Сброс счетчика для Ивана
 });
 
 maryaSelectorButton.addEventListener("click", () => {
   store.dispatch(setCurrentSender("Мария"));
-  maryaUnreadCount.style.display = "none";
+  maryaSelectorButton.classList.add("active-person");
+  ivanSelectorButton.classList.remove("active-person");
+  store.dispatch(resetUnreadCount("Мария")); // Сброс счетчика для Марии
 });
 
 chatInputForm.addEventListener("submit", (event) => {
@@ -76,9 +93,21 @@ const updateUI = () => {
     chatMessages.appendChild(messageElement);
   });
 
-  // Обновление счётчиков непрочитанных сообщений
-  ivanUnreadCount.textContent = state.ivanUnread.toString();
-  maryaUnreadCount.textContent = state.maryaUnread.toString();
+  // Обновление счетчика непрочитанных сообщений Ивана
+  if (state.ivanUnread > 0) {
+    ivanUnreadCount.textContent = state.ivanUnread.toString();
+    ivanUnreadCount.style.display = "inline";
+  } else {
+    ivanUnreadCount.style.display = "none";
+  }
+
+  // Обновление счетчика непрочитанных сообщений Марии
+  if (state.maryaUnread > 0) {
+    maryaUnreadCount.textContent = state.maryaUnread.toString();
+    maryaUnreadCount.style.display = "inline";
+  } else {
+    maryaUnreadCount.style.display = "none";
+  }
 };
 
 // Подписка на обновления хранилища

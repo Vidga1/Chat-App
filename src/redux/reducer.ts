@@ -52,11 +52,13 @@ const chatReducer = (
       }
       return state;
     case RESET_UNREAD_COUNT:
-      return {
-        ...state,
-        ivanUnread: 0,
-        maryaUnread: 0,
-      };
+      if (action.payload === "Иван") {
+        return { ...state, ivanUnread: 0 };
+      }
+      if (action.payload === "Мария") {
+        return { ...state, maryaUnread: 0 };
+      }
+      return state;
     case SET_CURRENT_SENDER:
       return {
         ...state,
