@@ -8,7 +8,25 @@ import {
   setCurrentSender,
   incrementUnreadCount,
   resetUnreadCount,
+  Message,
 } from "./redux/actions";
+
+// Функция для создания элемента сообщения
+const createChatMessageElement = (message: Message, messageSender: string) => {
+  const isCurrentUserMessage = message.sender === messageSender;
+  const bgColorClass = isCurrentUserMessage ? "blue-bg" : "gray-bg";
+  const formattedTimestamp = new Date(message.timestamp).toLocaleString(
+    "ru-RU",
+  );
+
+  return `
+    <div class="message ${bgColorClass}">
+      <div class="message-sender">${message.sender}</div>
+      <div class="message-text">${message.text}</div>
+      <div class="message-timestamp">${formattedTimestamp}</div>
+    </div>
+  `;
+};
 
 // Получение элементов DOM
 const ivanSelectorButton = document.getElementById(
@@ -88,12 +106,13 @@ const updateUI = () => {
   chatMessages.innerHTML = "";
 
   state.messages.forEach((message) => {
-    const messageElement = document.createElement("div");
-    messageElement.textContent = `${message.sender}: ${message.text} - ${message.timestamp}`;
-    chatMessages.appendChild(messageElement);
+    const messageHTML = createChatMessageElement(message, state.currentSender);
+    chatMessages.innerHTML += messageHTML;
   });
 
-  // Обновление счетчика непрочитанных сообщений Ивана
+  ivanUnreadCount.style.display = state.ivanUnread > 0 ? "inline" : "none";
+  maryaUnreadCount.style.display = state.maryaUnread > 0 ? "inline" : "none";
+
   if (state.ivanUnread > 0) {
     ivanUnreadCount.textContent = state.ivanUnread.toString();
     ivanUnreadCount.style.display = "inline";
