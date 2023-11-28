@@ -49,6 +49,10 @@ const ivanUnreadCount = document.getElementById(
 const maryaUnreadCount = document.getElementById(
   "marya-unread",
 ) as HTMLSpanElement;
+const emojiButton = document.querySelector(
+  ".emoji-button",
+) as HTMLButtonElement;
+const emojiPanel = document.querySelector(".emoji-panel") as HTMLDivElement;
 
 // Проверка существования элементов DOM
 if (
@@ -57,10 +61,17 @@ if (
   !chatInputForm ||
   !chatInput ||
   !chatMessages ||
-  !clearChatButton
+  !clearChatButton ||
+  !emojiButton ||
+  !emojiPanel
 ) {
   throw new Error("Some HTML elements are missing.");
 }
+
+emojiButton.addEventListener("click", () => {
+  emojiPanel.style.display =
+    emojiPanel.style.display === "none" ? "block" : "none";
+});
 
 // Обработчики событий для выбора пользователя
 ivanSelectorButton.addEventListener("click", () => {
@@ -102,6 +113,7 @@ clearChatButton.addEventListener("click", () => {
 
 // Функция для обновления интерфейса
 const updateUI = () => {
+  emojiPanel.style.display = "none";
   const state = store.getState();
   chatMessages.innerHTML = "";
 
@@ -128,6 +140,30 @@ const updateUI = () => {
     maryaUnreadCount.style.display = "none";
   }
 };
+
+// Функция для вставки смайлика в поле ввода
+const insertEmoji = (emoji: string) => {
+  const start = chatInput.selectionStart;
+  const end = chatInput.selectionEnd;
+  const text = chatInput.value;
+  const before = text.substring(0, start);
+  const after = text.substring(end, text.length);
+  chatInput.value = before + emoji + after;
+  chatInput.selectionStart = start + emoji.length; // Разделяем присваивания
+  chatInput.selectionEnd = start + emoji.length;
+  chatInput.focus();
+};
+
+// Добавление обработчиков событий для каждого смайлика
+document.querySelectorAll(".emoji").forEach((emojiElement) => {
+  emojiElement.addEventListener("click", (e) => {
+    const emoji = (e.target as HTMLElement).textContent; // Утверждение типа для EventTarget
+    if (emoji) {
+      insertEmoji(emoji);
+      emojiPanel.style.display = "none"; // Скрыть панель смайликов после выбора
+    }
+  });
+});
 
 // Подписка на обновления хранилища
 store.subscribe(updateUI);
