@@ -1,11 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getDatabase, ref, set } from 'firebase/database';
+import { Message } from './redux/actions'
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDKZKeg6K2sigOpadWaKUCdOesIl22aPHk",
   authDomain: "chat-app-cf4e2.firebaseapp.com",
@@ -16,7 +12,9 @@ const firebaseConfig = {
   measurementId: "G-6QYB0Q1XR2",
 };
 
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-export const analytics = getAnalytics(app);
-export const db = getFirestore(app);
+const database = getDatabase(app);
+
+export const writeData = (path: string, data: Message) => {
+  set(ref(database, path), data);
+};
