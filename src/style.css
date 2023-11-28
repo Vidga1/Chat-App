@@ -125,7 +125,7 @@ span {
 .chat-input {
   padding: 0.625em;
   padding-right: 30px; /* Дополнительный отступ справа для смайлика */
-  width: 585px;
+  width: 36.5625em;
   border: none;
   border-radius: 0.5em;
   background-color: #f5f5f5;

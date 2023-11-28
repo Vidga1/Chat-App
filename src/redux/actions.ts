@@ -1,6 +1,3 @@
-// Импортируем необходимые функции из Redux
-import { Dispatch } from "redux";
-
 // Определение типа для сообщения
 export type Message = {
   sender: string;
@@ -73,24 +70,3 @@ export const setCurrentSender = (sender: string): SetCurrentSenderAction => ({
   type: SET_CURRENT_SENDER,
   payload: sender,
 });
-
-// Асинхронные действия с использованием Redux Thunk
-export const sendMessageAsync = (message: Message) => (dispatch: Dispatch) => {
-  // Имитация асинхронной операции (например, отправка сообщения на сервер)
-  setTimeout(() => {
-    dispatch(sendMessage(message));
-
-    // Определяем, кому адресовано сообщение и увеличиваем счётчик для другого пользователя
-    const recipient = message.sender === "Иван" ? "Мария" : "Иван";
-    dispatch(incrementUnreadCount(recipient));
-  }, 1000);
-};
-
-// Обнуление счётчика непрочитанных сообщений может быть также асинхронной операцией
-export const resetUnreadCountAsync =
-  (userName: string) => (dispatch: Dispatch) => {
-    // Имитация асинхронной операции
-    setTimeout(() => {
-      dispatch(resetUnreadCount(userName));
-    }, 1000);
-  };
