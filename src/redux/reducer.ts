@@ -4,12 +4,13 @@ import {
   INCREMENT_UNREAD_COUNT,
   RESET_UNREAD_COUNT,
   SET_CURRENT_SENDER,
+  FETCH_MESSAGES,
   ChatActionTypes,
   Message,
 } from "./actions";
 
 // Определение типа для состояния чата
-type ChatState = {
+export type ChatState = {
   messages: Message[];
   ivanUnread: number;
   maryaUnread: number;
@@ -49,7 +50,7 @@ const chatReducer = (
         return { ...state, maryaUnread: state.maryaUnread + 1 };
       }
       return state;
-  case RESET_UNREAD_COUNT:
+    case RESET_UNREAD_COUNT:
       if (action.payload === "Иван") {
         return { ...state, ivanUnread: 0 };
       }
@@ -61,6 +62,11 @@ const chatReducer = (
       return {
         ...state,
         currentSender: action.payload,
+      };
+    case FETCH_MESSAGES:
+      return {
+        ...state,
+        messages: action.payload,
       };
     default:
       return currentState;

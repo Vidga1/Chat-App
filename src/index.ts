@@ -1,7 +1,9 @@
 // Импорт стилей
 import "./style.css";
-import { collection, addDoc, query, orderBy, getDocs, deleteDoc } from "firebase/firestore";
-import { firestore } from './firebaseConfig';
+import { collection, addDoc, getDocs, deleteDoc } from "firebase/firestore";
+import { ThunkAction } from "redux-thunk";
+import { Action } from "redux";
+import { firestore } from "./firebaseConfig";
 import store from "./redux/store";
 import {
   sendMessage,
@@ -9,8 +11,15 @@ import {
   setCurrentSender,
   incrementUnreadCount,
   resetUnreadCount,
+  fetchMessages,
   Message,
 } from "./redux/actions";
+
+import { ChatState } from "./redux/reducer";
+
+const { dispatch } = store;
+
+export type ChatThunkAction = ThunkAction<void, ChatState, unknown, Action>;
 
 /* ------------------------------------------DOM---------------------------------------- */
 // Функция для создания элемента сообщения
@@ -76,15 +85,23 @@ const scrollToBottom = () => {
 
 /* -------------------------------------ВЫБОР ПОЛЬЗОВАТЕЛЯ И СЧЁТЧИКИ------------------------------- */
 
-function handleUserSelection(user: string, userButton: HTMLButtonElement, otherButton: HTMLButtonElement) {
+function handleUserSelection(
+  user: string,
+  userButton: HTMLButtonElement,
+  otherButton: HTMLButtonElement,
+) {
   store.dispatch(setCurrentSender(user));
   userButton.classList.add("active-person");
   otherButton.classList.remove("active-person");
   store.dispatch(resetUnreadCount(user));
 }
 
-ivanSelectorButton.addEventListener("click", () => handleUserSelection("Иван", ivanSelectorButton, maryaSelectorButton));
-maryaSelectorButton.addEventListener("click", () => handleUserSelection("Мария", maryaSelectorButton, ivanSelectorButton));
+ivanSelectorButton.addEventListener("click", () =>
+  handleUserSelection("Иван", ivanSelectorButton, maryaSelectorButton),
+);
+maryaSelectorButton.addEventListener("click", () =>
+  handleUserSelection("Мария", maryaSelectorButton, ivanSelectorButton),
+);
 
 /* ------------------------------------------ФОРМА------------------------------------------ */
 chatInputForm.addEventListener("submit", async (event) => {
@@ -115,40 +132,27 @@ chatInputForm.addEventListener("submit", async (event) => {
     store.dispatch(incrementUnreadCount("Иван"));
     ivanUnreadCount.style.display = "inline";
   }
-  scrollToBottom(); 
+  scrollToBottom();
 });
-
 
 /* --------------------------------------------ОБНОВЛЕНИЕ ИНТЕРФЕЙСА----------------------------------- */
 
-// Функция для обновления интерфейса
-const updateUI = async () => {
+const updateUI = () => {
   // Скрывает панель эмодзи
   emojiPanel.style.display = "none";
 
   const state = store.getState();
   chatMessages.innerHTML = "";
 
-  // Получение сообщений из Firebase и их отображение
-  const q = query(collection(firestore, "messages"), orderBy("timestamp"));
-
-  try {
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach(doc => {
-      // Приведение типа DocumentData к типу Message
-      const messageData = doc.data() as Message;
-
-      // Проверяем, есть ли все необходимые поля в messageData
-      if (messageData && messageData.sender && messageData.text && messageData.timestamp) {
-        const messageHTML = createChatMessageElement(messageData, state.currentSender);
-        chatMessages.innerHTML += messageHTML;
-      }
-    });
-    scrollToBottom();
-  } catch (error) {
-    console.error("Ошибка при получении сообщений: ", error);
-  }
-
+  // Отображение сообщений из состояния Redux
+  state.messages.forEach((messageData) => {
+    const messageHTML = createChatMessageElement(
+      messageData,
+      state.currentSender,
+    );
+    chatMessages.innerHTML += messageHTML;
+  });
+  scrollToBottom();
   // Обновление счетчиков непрочитанных сообщений
   ivanUnreadCount.style.display = state.ivanUnread > 0 ? "inline" : "none";
   maryaUnreadCount.style.display = state.maryaUnread > 0 ? "inline" : "none";
@@ -178,9 +182,8 @@ clearChatButton.addEventListener("click", async () => {
   querySnapshot.forEach((doc) => {
     deleteDoc(doc.ref);
   });
-  updateUI()
+  updateUI();
 });
-
 
 /* -------------------------------СМАЙЛИКИ----------------------------------- */
 // Функция для вставки смайлика в поле ввода
@@ -213,9 +216,12 @@ document.querySelectorAll(".emoji").forEach((emojiElement) => {
 });
 
 /* ----------------------------------------------ОБНОВЛЕНИЕ----------------------------------------- */
+// Инициализация интерфейса и загрузка данных
+dispatch(fetchMessages());
+console.log(store.getState());
 
 // Подписка на обновления хранилища
 store.subscribe(updateUI);
 
-// Инициализация интерфейса
+// Обновление интерфейса
 updateUI();
