@@ -76,20 +76,15 @@ const scrollToBottom = () => {
 
 /* -------------------------------------ВЫБОР ПОЛЬЗОВАТЕЛЯ И СЧЁТЧИКИ------------------------------- */
 
-// Обработчики событий для выбора пользователя
-ivanSelectorButton.addEventListener("click", () => {
-  store.dispatch(setCurrentSender("Иван"));
-  ivanSelectorButton.classList.add("active-person");
-  maryaSelectorButton.classList.remove("active-person");
-  store.dispatch(resetUnreadCount("Иван")); // Сброс счетчика для Ивана
-});
+function handleUserSelection(user: string, userButton: HTMLButtonElement, otherButton: HTMLButtonElement) {
+  store.dispatch(setCurrentSender(user));
+  userButton.classList.add("active-person");
+  otherButton.classList.remove("active-person");
+  store.dispatch(resetUnreadCount(user));
+}
 
-maryaSelectorButton.addEventListener("click", () => {
-  store.dispatch(setCurrentSender("Мария"));
-  maryaSelectorButton.classList.add("active-person");
-  ivanSelectorButton.classList.remove("active-person");
-  store.dispatch(resetUnreadCount("Мария")); // Сброс счетчика для Марии
-});
+ivanSelectorButton.addEventListener("click", () => handleUserSelection("Иван", ivanSelectorButton, maryaSelectorButton));
+maryaSelectorButton.addEventListener("click", () => handleUserSelection("Мария", maryaSelectorButton, ivanSelectorButton));
 
 /* ------------------------------------------ФОРМА------------------------------------------ */
 chatInputForm.addEventListener("submit", async (event) => {
