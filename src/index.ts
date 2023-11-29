@@ -1,6 +1,7 @@
 // Импорт стилей
 import "./style.css";
-
+import { collection, addDoc, query, orderBy, getDocs, deleteDoc } from "firebase/firestore";
+import { firestore } from './firebaseConfig';
 import store from "./redux/store";
 import {
   sendMessage,
@@ -11,6 +12,7 @@ import {
   Message,
 } from "./redux/actions";
 
+/* ------------------------------------------DOM---------------------------------------- */
 // Функция для создания элемента сообщения
 const createChatMessageElement = (message: Message, messageSender: string) => {
   const isCurrentUserMessage = message.sender === messageSender;
@@ -68,10 +70,11 @@ if (
   throw new Error("Some HTML elements are missing.");
 }
 
-emojiButton.addEventListener("click", () => {
-  emojiPanel.style.display =
-    emojiPanel.style.display === "none" ? "block" : "none";
-});
+const scrollToBottom = () => {
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+/* -------------------------------------ВЫБОР ПОЛЬЗОВАТЕЛЯ И СЧЁТЧИКИ------------------------------- */
 
 // Обработчики событий для выбора пользователя
 ivanSelectorButton.addEventListener("click", () => {
@@ -88,16 +91,28 @@ maryaSelectorButton.addEventListener("click", () => {
   store.dispatch(resetUnreadCount("Мария")); // Сброс счетчика для Марии
 });
 
-chatInputForm.addEventListener("submit", (event) => {
+/* ------------------------------------------ФОРМА------------------------------------------ */
+chatInputForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const message = chatInput.value;
   const timestamp = new Date().toISOString();
   const { currentSender } = store.getState();
-  store.dispatch(
-    sendMessage({ sender: currentSender, text: message, timestamp }),
-  );
+
+  const messageData = { sender: currentSender, text: message, timestamp };
+
+  // Отправка сообщения в Redux
+  store.dispatch(sendMessage(messageData));
+
+  // Сохранение сообщения в Firebase
+  try {
+    await addDoc(collection(firestore, "messages"), messageData);
+  } catch (error) {
+    console.error("Ошибка при добавлении сообщения: ", error);
+  }
+
   chatInput.value = "";
 
+  // Логика для обновления счетчиков непрочитанных сообщений
   if (currentSender === "Иван") {
     store.dispatch(incrementUnreadCount("Мария"));
     maryaUnreadCount.style.display = "inline";
@@ -105,42 +120,74 @@ chatInputForm.addEventListener("submit", (event) => {
     store.dispatch(incrementUnreadCount("Иван"));
     ivanUnreadCount.style.display = "inline";
   }
+  scrollToBottom(); 
 });
 
-clearChatButton.addEventListener("click", () => {
-  store.dispatch(clearChat());
-});
+
+/* --------------------------------------------ОБНОВЛЕНИЕ ИНТЕРФЕЙСА----------------------------------- */
 
 // Функция для обновления интерфейса
-const updateUI = () => {
+const updateUI = async () => {
+  // Скрывает панель эмодзи
   emojiPanel.style.display = "none";
+
   const state = store.getState();
   chatMessages.innerHTML = "";
 
-  state.messages.forEach((message) => {
-    const messageHTML = createChatMessageElement(message, state.currentSender);
-    chatMessages.innerHTML += messageHTML;
-  });
+  // Получение сообщений из Firebase и их отображение
+  const q = query(collection(firestore, "messages"), orderBy("timestamp"));
 
+  try {
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(doc => {
+      // Приведение типа DocumentData к типу Message
+      const messageData = doc.data() as Message;
+
+      // Проверяем, есть ли все необходимые поля в messageData
+      if (messageData && messageData.sender && messageData.text && messageData.timestamp) {
+        const messageHTML = createChatMessageElement(messageData, state.currentSender);
+        chatMessages.innerHTML += messageHTML;
+      }
+    });
+    scrollToBottom();
+  } catch (error) {
+    console.error("Ошибка при получении сообщений: ", error);
+  }
+
+  // Обновление счетчиков непрочитанных сообщений
   ivanUnreadCount.style.display = state.ivanUnread > 0 ? "inline" : "none";
   maryaUnreadCount.style.display = state.maryaUnread > 0 ? "inline" : "none";
 
   if (state.ivanUnread > 0) {
     ivanUnreadCount.textContent = state.ivanUnread.toString();
-    ivanUnreadCount.style.display = "inline";
   } else {
     ivanUnreadCount.style.display = "none";
   }
 
-  // Обновление счетчика непрочитанных сообщений Марии
   if (state.maryaUnread > 0) {
     maryaUnreadCount.textContent = state.maryaUnread.toString();
-    maryaUnreadCount.style.display = "inline";
   } else {
     maryaUnreadCount.style.display = "none";
   }
 };
 
+/* -------------------------------------ОЧИСТИТЬ ЧАТ---------------------------------------- */
+
+clearChatButton.addEventListener("click", async () => {
+  // Очистка Redux Store
+  store.dispatch(clearChat());
+
+  // Очистка сообщений в Firebase
+  const messagesRef = collection(firestore, "messages");
+  const querySnapshot = await getDocs(messagesRef);
+  querySnapshot.forEach((doc) => {
+    deleteDoc(doc.ref);
+  });
+  updateUI()
+});
+
+
+/* -------------------------------СМАЙЛИКИ----------------------------------- */
 // Функция для вставки смайлика в поле ввода
 const insertEmoji = (emoji: string) => {
   const start = chatInput.selectionStart;
@@ -154,6 +201,11 @@ const insertEmoji = (emoji: string) => {
   chatInput.focus();
 };
 
+emojiButton.addEventListener("click", () => {
+  emojiPanel.style.display =
+    emojiPanel.style.display === "none" ? "block" : "none";
+});
+
 // Добавление обработчиков событий для каждого смайлика
 document.querySelectorAll(".emoji").forEach((emojiElement) => {
   emojiElement.addEventListener("click", (e) => {
@@ -164,6 +216,8 @@ document.querySelectorAll(".emoji").forEach((emojiElement) => {
     }
   });
 });
+
+/* ----------------------------------------------ОБНОВЛЕНИЕ----------------------------------------- */
 
 // Подписка на обновления хранилища
 store.subscribe(updateUI);

@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set } from 'firebase/database';
-import { Message } from './redux/actions'
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDKZKeg6K2sigOpadWaKUCdOesIl22aPHk",
@@ -12,9 +11,10 @@ const firebaseConfig = {
   measurementId: "G-6QYB0Q1XR2",
 };
 
-export const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+// Инициализация Firebase
+const app = initializeApp(firebaseConfig);
 
-export const writeData = (path: string, data: Message) => {
-  set(ref(database, path), data);
-};
+// Получение экземпляра Firestore
+const firestore = getFirestore(app);
+
+export { firestore };

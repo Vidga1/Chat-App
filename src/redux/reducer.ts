@@ -40,8 +40,6 @@ const chatReducer = (
       return {
         ...state,
         messages: [],
-        ivanUnread: 0,
-        maryaUnread: 0,
       };
     case INCREMENT_UNREAD_COUNT:
       if (action.payload === "Иван") {
@@ -51,7 +49,7 @@ const chatReducer = (
         return { ...state, maryaUnread: state.maryaUnread + 1 };
       }
       return state;
-    case RESET_UNREAD_COUNT:
+  case RESET_UNREAD_COUNT:
       if (action.payload === "Иван") {
         return { ...state, ivanUnread: 0 };
       }
