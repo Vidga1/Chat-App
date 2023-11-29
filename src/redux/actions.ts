@@ -55,7 +55,7 @@ export type ChatActionTypes =
   | IncrementUnreadCountAction
   | ResetUnreadCountAction
   | SetCurrentSenderAction
-  | FetchMessagesAction;
+  | FetchMessagesAction
 
 // Action Creators
 export const sendMessage = (message: Message): SendMessageAction => ({
@@ -87,17 +87,23 @@ export const setCurrentSender = (sender: string): SetCurrentSenderAction => ({
 // Асинхронный Action Creator (Thunk)
 export const fetchMessages =
   (): ThunkAction<void, ChatState, unknown, Action<string>> =>
-  async (dispatch) => {
+  async (dispatch, getState) => {
     try {
-      const querySnapshot = await getDocs(collection(firestore, "messages"));
-      const messages: Message[] = [];
-      querySnapshot.forEach((doc) => {
-        messages.push(doc.data() as Message);
-      });
-      dispatch({
-        type: FETCH_MESSAGES,
-        payload: messages,
-      });
+      // Выполните дополнительные действия здесь
+      // Например, проверить текущее состояние:
+      const state = getState();
+      if (state.messages.length === 0) {
+        // Если нет сообщений, выполняем запрос
+        const querySnapshot = await getDocs(collection(firestore, "messages"));
+        const messages: Message[] = [];
+        querySnapshot.forEach((doc) => {
+          messages.push(doc.data() as Message);
+        });
+        dispatch({
+          type: FETCH_MESSAGES,
+          payload: messages,
+        });
+      }
     } catch (error) {
       console.error("Ошибка при получении сообщений: ", error);
     }

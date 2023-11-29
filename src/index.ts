@@ -1,8 +1,8 @@
-// Импорт стилей
+// Импорт стилей и необходимых библиотек
 import "./style.css";
 import { collection, addDoc, getDocs, deleteDoc } from "firebase/firestore";
-import { ThunkAction } from "redux-thunk";
-import { Action } from "redux";
+import { ThunkDispatch } from 'redux-thunk';
+import { AnyAction } from 'redux';
 import { firestore } from "./firebaseConfig";
 import store from "./redux/store";
 import {
@@ -17,9 +17,9 @@ import {
 
 import { ChatState } from "./redux/reducer";
 
-const { dispatch } = store;
-
-export type ChatThunkAction = ThunkAction<void, ChatState, unknown, Action>;
+// Типизация для thunk-действий
+type AppDispatch = ThunkDispatch<ChatState, unknown, AnyAction>;
+const { dispatch } = store as { dispatch: AppDispatch };
 
 /* ------------------------------------------DOM---------------------------------------- */
 // Функция для создания элемента сообщения
