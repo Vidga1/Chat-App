@@ -6,7 +6,7 @@
     <title>Chat App</title>
   </head>
   <body>
-    <div class="person-selector">
+    <nav class="person-selector">
       <button
         class="button person-selector-button active-person"
         id="ivan-selector"
@@ -27,11 +27,13 @@
           style="display: none"
         ></span>
       </button>
-    </div>
-    <div class="chat-container">
-      <h2 class="chat-header">Иван пишет...</h2>
+    </nav>
+    <main class="chat-container">
+      <header>
+        <h2 class="chat-header">Иван пишет...</h2>
+      </header>
 
-      <div class="chat-messages"></div>
+      <section class="chat-messages"></section>
 
       <form class="chat-input-form">
         <div class="input-emoji-container">
@@ -97,8 +99,10 @@
           <span class="emoji">🤢</span>
         </div>
       </div>
-      <button class="button clear-chat-button">Очистить чат</button>
-    </div>
+      <footer>
+        <button class="button clear-chat-button">Очистить чат</button>
+      </footer>
+    </main>
 
     <script src="index.ts"></script>
   </body>
