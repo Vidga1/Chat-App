@@ -49,7 +49,7 @@ const maryaSelectorButton = document.getElementById(
 const chatInputForm = document.querySelector(
   ".chat-input-form",
 ) as HTMLFormElement;
-const chatInput = document.querySelector(".chat-input") as HTMLInputElement;
+const chatInput = document.querySelector(".chat-input") as HTMLTextAreaElement;
 const chatMessages = document.querySelector(".chat-messages") as HTMLDivElement;
 const clearChatButton = document.querySelector(
   ".clear-chat-button",
@@ -98,6 +98,20 @@ function handleUserSelection(
   // Сохранение сброшенного счётчика в localStorage
   localStorage.setItem(user === "Иван" ? "ivanUnread" : "maryaUnread", "0");
   localStorage.setItem("currentSender", user);
+  // Обновление текста в элементах h2 и textarea
+  const chatHeader = document.querySelector(
+    ".chat-header",
+  ) as HTMLHeadingElement;
+  const chatInputPlaceholder = document.querySelector(
+    ".chat-input",
+  ) as HTMLTextAreaElement;
+  if (user === "Иван") {
+    chatHeader.textContent = "Мария пишет...";
+    chatInputPlaceholder.placeholder = "Здесь пишет, Иван...";
+  } else {
+    chatHeader.textContent = "Иван пишет...";
+    chatInputPlaceholder.placeholder = "Здесь пишет, Мария...";
+  }
 }
 
 ivanSelectorButton.addEventListener("click", () =>
@@ -108,39 +122,55 @@ maryaSelectorButton.addEventListener("click", () =>
 );
 
 /* ------------------------------------------ФОРМА------------------------------------------ */
+// Функция для отправки сообщения
+async function sendMessageHandler() {
+  const message = chatInput.value.trim();
+  if (message) {
+    const timestamp = new Date().toISOString();
+    const { currentSender } = store.getState();
+
+    const messageData = { sender: currentSender, text: message, timestamp };
+
+    // Отправка сообщения в Redux
+    store.dispatch(sendMessage(messageData));
+
+    // Сохранение сообщения в Firebase
+    try {
+      await addDoc(collection(firestore, "messages"), messageData);
+    } catch (error) {
+      console.error("Ошибка при добавлении сообщения: ", error);
+    }
+
+    chatInput.value = "";
+
+    // Логика для обновления счетчиков непрочитанных сообщений
+    const recipient = currentSender === "Иван" ? "Мария" : "Иван";
+    store.dispatch(incrementUnreadCount(recipient));
+
+    // Сохранение обновлённого счётчика в localStorage
+    const updatedCount =
+      store.getState()[recipient === "Иван" ? "ivanUnread" : "maryaUnread"];
+    localStorage.setItem(
+      recipient === "Иван" ? "ivanUnread" : "maryaUnread",
+      updatedCount.toString(),
+    );
+
+    scrollToBottom();
+  }
+}
+
+// Обработчик события нажатия клавиши
+chatInput.addEventListener("keydown", async (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    await sendMessageHandler();
+  }
+});
+
+// Обработчик события отправки формы
 chatInputForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const message = chatInput.value;
-  const timestamp = new Date().toISOString();
-  const { currentSender } = store.getState();
-
-  const messageData = { sender: currentSender, text: message, timestamp };
-
-  // Отправка сообщения в Redux
-  store.dispatch(sendMessage(messageData));
-
-  // Сохранение сообщения в Firebase
-  try {
-    await addDoc(collection(firestore, "messages"), messageData);
-  } catch (error) {
-    console.error("Ошибка при добавлении сообщения: ", error);
-  }
-
-  chatInput.value = "";
-
-  // Логика для обновления счетчиков непрочитанных сообщений
-  const recipient = currentSender === "Иван" ? "Мария" : "Иван";
-  store.dispatch(incrementUnreadCount(recipient));
-
-  // Сохранение обновлённого счётчика в localStorage
-  const updatedCount =
-    store.getState()[recipient === "Иван" ? "ivanUnread" : "maryaUnread"];
-  localStorage.setItem(
-    recipient === "Иван" ? "ivanUnread" : "maryaUnread",
-    updatedCount.toString(),
-  );
-
-  scrollToBottom();
+  await sendMessageHandler();
 });
 
 /* --------------------------------------------ОБНОВЛЕНИЕ ИНТЕРФЕЙСА----------------------------------- */
@@ -209,17 +239,19 @@ const insertEmoji = (emoji: string) => {
 };
 
 emojiButton.addEventListener("click", () => {
-  emojiPanel.style.display =
-    emojiPanel.style.display === "none" ? "block" : "none";
+  const isPanelVisible = emojiPanel.style.display === "block";
+  emojiPanel.style.display = isPanelVisible ? "none" : "block";
+  clearChatButton.style.display = isPanelVisible ? "block" : "none"; // Скрываем или показываем кнопку "Очистить чат"
 });
 
 // Добавление обработчиков событий для каждого смайлика
 document.querySelectorAll(".emoji").forEach((emojiElement) => {
   emojiElement.addEventListener("click", (e) => {
-    const emoji = (e.target as HTMLElement).textContent; // Утверждение типа для EventTarget
+    const emoji = (e.target as HTMLElement).textContent;
     if (emoji) {
       insertEmoji(emoji);
       emojiPanel.style.display = "none"; // Скрыть панель смайликов после выбора
+      clearChatButton.style.display = "block"; // Показать кнопку "Очистить чат"
     }
   });
 });
