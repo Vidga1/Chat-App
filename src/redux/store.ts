@@ -1,14 +1,33 @@
-import { legacy_createStore as createStore, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-import { composeWithDevTools } from "redux-devtools-extension";
-
-// Импорт редьюсера
-import chatReducer from "./reducer";
-
-// Создание хранилища с применением Redux Thunk и интеграцией Redux DevTools
-const store = createStore(
+import {
+  ChatState,
   chatReducer,
-  composeWithDevTools(applyMiddleware(thunk)),
-);
+  initialState as chatInitialState,
+} from "./reducer";
+import { ChatActionTypes } from "./actions";
 
+class Store {
+  private state: ChatState;
+
+  private listeners: Array<() => void> = [];
+
+  constructor(initialState: ChatState) {
+    this.state = initialState;
+  }
+
+  getState = (): ChatState => this.state;
+
+  dispatch = (action: ChatActionTypes): void => {
+    this.state = chatReducer(this.state, action);
+    this.listeners.forEach((listener) => listener());
+  };
+
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter((l) => l !== listener);
+    };
+  };
+}
+
+const store = new Store(chatInitialState);
 export default store;

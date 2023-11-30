@@ -67,12 +67,8 @@
     "firebase-tools": "^12.9.1",
     "@babel/polyfill": "7.12.1",
     "@firebase/firestore": "^4.4.0",
-    "@reduxjs/toolkit": "^1.9.7",
     "core-js": "3.32.2",
     "firebase": "^10.7.0",
-    "redux": "^4.2.1",
-    "redux-devtools-extension": "^2.13.9",
-    "redux-thunk": "^2.4.2",
     "regenerator-runtime": "0.14.0"
   }
 }

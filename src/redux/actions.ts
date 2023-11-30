@@ -1,18 +1,13 @@
-import { ThunkAction } from "redux-thunk";
-import { Action } from "redux";
 import { collection, getDocs } from "firebase/firestore";
-import { firestore } from "../firebaseConfig"; // Предполагается, что путь верный
-import { ChatState } from "./reducer"; // Импортируем тип состояния чата
+import { firestore } from "../firebaseConfig";
 
-// Определение типов действий
 export const SEND_MESSAGE = "SEND_MESSAGE";
 export const CLEAR_CHAT = "CLEAR_CHAT";
 export const INCREMENT_UNREAD_COUNT = "INCREMENT_UNREAD_COUNT";
 export const RESET_UNREAD_COUNT = "RESET_UNREAD_COUNT";
 export const SET_CURRENT_SENDER = "SET_CURRENT_SENDER";
-export const FETCH_MESSAGES = "FETCH_MESSAGES"; // Новый тип действия для получения сообщений
+export const FETCH_MESSAGES_SUCCESS = "FETCH_MESSAGES_SUCCESS";
 
-// Определение типа для сообщения
 export type Message = {
   sender: string;
   text: string;
@@ -43,9 +38,8 @@ export type SetCurrentSenderAction = {
   payload: string;
 };
 
-export type FetchMessagesAction = {
-  // Новый тип действия
-  type: typeof FETCH_MESSAGES;
+export type FetchMessagesSuccessAction = {
+  type: typeof FETCH_MESSAGES_SUCCESS;
   payload: Message[];
 };
 
@@ -55,9 +49,8 @@ export type ChatActionTypes =
   | IncrementUnreadCountAction
   | ResetUnreadCountAction
   | SetCurrentSenderAction
-  | FetchMessagesAction;
+  | FetchMessagesSuccessAction;
 
-// Action Creators
 export const sendMessage = (message: Message): SendMessageAction => ({
   type: SEND_MESSAGE,
   payload: message,
@@ -84,23 +77,24 @@ export const setCurrentSender = (sender: string): SetCurrentSenderAction => ({
   payload: sender,
 });
 
-// Асинхронный Action Creator (Thunk)
-export const fetchMessages =
-  (): ThunkAction<void, ChatState, unknown, Action<string>> =>
-  async (dispatch) => {
-    try {
-      const querySnapshot = await getDocs(collection(firestore, "messages"));
-      const messages: Message[] = [];
-      querySnapshot.forEach((doc) => {
-        messages.push(doc.data() as Message);
-      });
-      // Сортировка сообщений по метке времени
-      messages.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-      dispatch({
-        type: FETCH_MESSAGES,
-        payload: messages,
-      });
-    } catch (error) {
-      console.error("Ошибка при получении сообщений: ", error);
-    }
-  };
+export const fetchMessagesSuccess = (
+  messages: Message[],
+): FetchMessagesSuccessAction => ({
+  type: FETCH_MESSAGES_SUCCESS,
+  payload: messages,
+});
+
+export const fetchMessages = async (
+  dispatch: (action: ChatActionTypes) => void,
+) => {
+  try {
+    const querySnapshot = await getDocs(collection(firestore, "messages"));
+    const messages: Message[] = querySnapshot.docs.map(
+      (doc) => doc.data() as Message,
+    );
+    messages.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    dispatch(fetchMessagesSuccess(messages));
+  } catch (error) {
+    console.error("Ошибка при получении сообщений: ", error);
+  }
+};

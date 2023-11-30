@@ -11,10 +11,8 @@ const firebaseConfig = {
   measurementId: "G-6QYB0Q1XR2",
 };
 
-// Инициализация Firebase
 const app = initializeApp(firebaseConfig);
 
-// Получение экземпляра Firestore
 const firestore = getFirestore(app);
 
 export { firestore };
