@@ -55,7 +55,7 @@ export type ChatActionTypes =
   | IncrementUnreadCountAction
   | ResetUnreadCountAction
   | SetCurrentSenderAction
-  | FetchMessagesAction
+  | FetchMessagesAction;
 
 // Action Creators
 export const sendMessage = (message: Message): SendMessageAction => ({

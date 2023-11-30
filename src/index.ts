@@ -1,8 +1,8 @@
 // Импорт стилей и необходимых библиотек
 import "./style.css";
 import { collection, addDoc, getDocs, deleteDoc } from "firebase/firestore";
-import { ThunkDispatch } from 'redux-thunk';
-import { AnyAction } from 'redux';
+import { ThunkDispatch } from "redux-thunk";
+import { AnyAction } from "redux";
 import { firestore } from "./firebaseConfig";
 import store from "./redux/store";
 import {
@@ -94,6 +94,9 @@ function handleUserSelection(
   userButton.classList.add("active-person");
   otherButton.classList.remove("active-person");
   store.dispatch(resetUnreadCount(user));
+
+  // Сохранение сброшенного счётчика в localStorage
+  localStorage.setItem(user === "Иван" ? "ivanUnread" : "maryaUnread", "0");
 }
 
 ivanSelectorButton.addEventListener("click", () =>
@@ -125,13 +128,17 @@ chatInputForm.addEventListener("submit", async (event) => {
   chatInput.value = "";
 
   // Логика для обновления счетчиков непрочитанных сообщений
-  if (currentSender === "Иван") {
-    store.dispatch(incrementUnreadCount("Мария"));
-    maryaUnreadCount.style.display = "inline";
-  } else {
-    store.dispatch(incrementUnreadCount("Иван"));
-    ivanUnreadCount.style.display = "inline";
-  }
+  const recipient = currentSender === "Иван" ? "Мария" : "Иван";
+  store.dispatch(incrementUnreadCount(recipient));
+
+  // Сохранение обновлённого счётчика в localStorage
+  const updatedCount =
+    store.getState()[recipient === "Иван" ? "ivanUnread" : "maryaUnread"];
+  localStorage.setItem(
+    recipient === "Иван" ? "ivanUnread" : "maryaUnread",
+    updatedCount.toString(),
+  );
+
   scrollToBottom();
 });
 
