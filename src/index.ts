@@ -97,6 +97,7 @@ function handleUserSelection(
 
   // Сохранение сброшенного счётчика в localStorage
   localStorage.setItem(user === "Иван" ? "ivanUnread" : "maryaUnread", "0");
+  localStorage.setItem("currentSender", user);
 }
 
 ivanSelectorButton.addEventListener("click", () =>
@@ -160,21 +161,14 @@ const updateUI = () => {
     chatMessages.innerHTML += messageHTML;
   });
   scrollToBottom();
+
   // Обновление счетчиков непрочитанных сообщений
+  ivanUnreadCount.textContent =
+    state.ivanUnread > 0 ? state.ivanUnread.toString() : "";
+  maryaUnreadCount.textContent =
+    state.maryaUnread > 0 ? state.maryaUnread.toString() : "";
   ivanUnreadCount.style.display = state.ivanUnread > 0 ? "inline" : "none";
   maryaUnreadCount.style.display = state.maryaUnread > 0 ? "inline" : "none";
-
-  if (state.ivanUnread > 0) {
-    ivanUnreadCount.textContent = state.ivanUnread.toString();
-  } else {
-    ivanUnreadCount.style.display = "none";
-  }
-
-  if (state.maryaUnread > 0) {
-    maryaUnreadCount.textContent = state.maryaUnread.toString();
-  } else {
-    maryaUnreadCount.style.display = "none";
-  }
 };
 
 /* -------------------------------------ОЧИСТИТЬ ЧАТ---------------------------------------- */
@@ -182,6 +176,13 @@ const updateUI = () => {
 clearChatButton.addEventListener("click", async () => {
   // Очистка Redux Store
   store.dispatch(clearChat());
+  // Сброс счётчиков непрочитанных сообщений
+  store.dispatch(resetUnreadCount("Иван"));
+  store.dispatch(resetUnreadCount("Мария"));
+
+  // Сброс значения счётчиков в localStorage
+  localStorage.setItem("ivanUnread", "0");
+  localStorage.setItem("maryaUnread", "0");
 
   // Очистка сообщений в Firebase
   const messagesRef = collection(firestore, "messages");
@@ -189,6 +190,7 @@ clearChatButton.addEventListener("click", async () => {
   querySnapshot.forEach((doc) => {
     deleteDoc(doc.ref);
   });
+  chatInput.value = "";
   updateUI();
 });
 
@@ -223,12 +225,16 @@ document.querySelectorAll(".emoji").forEach((emojiElement) => {
 });
 
 /* ----------------------------------------------ОБНОВЛЕНИЕ----------------------------------------- */
-// Инициализация интерфейса и загрузка данных
-dispatch(fetchMessages());
-console.log(store.getState());
-
-// Подписка на обновления хранилища
-store.subscribe(updateUI);
-
-// Обновление интерфейса
-updateUI();
+document.addEventListener("DOMContentLoaded", () => {
+  const savedSender = localStorage.getItem("currentSender");
+  if (savedSender) {
+    handleUserSelection(
+      savedSender,
+      savedSender === "Иван" ? ivanSelectorButton : maryaSelectorButton,
+      savedSender === "Иван" ? maryaSelectorButton : ivanSelectorButton,
+    );
+  }
+  dispatch(fetchMessages());
+  store.subscribe(updateUI);
+  updateUI();
+});
