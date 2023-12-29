@@ -124,17 +124,17 @@ span {
 }
 
 .chat-input {
-  padding: 0.625em; /* Внутренний отступ с учетом вертикального и горизонтального */
-  width: 30.3em; /* Ширина поля ввода */
-  height: 2.4em; /* Фиксированная высота поля ввода */
-  border: none; /* Убрать границу */
-  border-radius: 0.5em; /* Скругление углов */
-  background-color: #f5f5f5; /* Цвет фона */
-  color: #333; /* Цвет текста */
-  font-size: 19px; /* Размер шрифта */
-  flex-grow: 1; /* Элемент растягивается для занятия всего доступного пространства */
-  box-sizing: border-box; /* Включает padding и border в общую ширину и высоту */
-  resize: none; /* Запрет на изменение размера пользователем */
+  padding: 0.625em;
+  width: 30.3em;
+  height: 2.4em;
+  border: none;
+  border-radius: 0.5em;
+  background-color: #f5f5f5;
+  color: #333;
+  font-size: 19px;
+  flex-grow: 1;
+  box-sizing: border-box;
+  resize: none;
   overflow-y: auto;
 }
 
