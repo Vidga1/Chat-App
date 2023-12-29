@@ -64,11 +64,12 @@
     "*.{js,ts,tsx,css,md}": "prettier --write"
   },
   "dependencies": {
-    "firebase-tools": "^12.9.1",
     "@babel/polyfill": "7.12.1",
     "@firebase/firestore": "^4.4.0",
     "core-js": "3.32.2",
+    "dotenv": "^16.3.1",
     "firebase": "^10.7.0",
+    "firebase-tools": "^12.9.1",
     "regenerator-runtime": "0.14.0"
   }
 }

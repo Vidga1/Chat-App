@@ -5,6 +5,9 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require("webpack");
 const path = require("path");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 module.exports = {
   entry: {
@@ -52,5 +55,17 @@ module.exports = {
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" }),
     new webpack.HotModuleReplacementPlugin(),
+    // DefinePlugin для внедрения переменных окружения
+    new webpack.DefinePlugin({
+      "process.env": {
+        API_KEY: JSON.stringify(process.env.API_KEY),
+        AUTH_DOMAIN: JSON.stringify(process.env.AUTH_DOMAIN),
+        PROJECT_ID: JSON.stringify(process.env.PROJECT_ID),
+        STORAGE_BUCKET: JSON.stringify(process.env.STORAGE_BUCKET),
+        MESSAGING_SENDER_ID: JSON.stringify(process.env.MESSAGING_SENDER_ID),
+        APP_ID: JSON.stringify(process.env.APP_ID),
+        MEASUREMENT_ID: JSON.stringify(process.env.MEASUREMENT_ID),
+      },
+    }),
   ],
 };
